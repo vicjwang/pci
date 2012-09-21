@@ -1,5 +1,6 @@
 import urllib2
-from bs4 import BeautifulSoup 
+#from bs4 import BeautifulSoup 
+import BeautifulSoup
 from urlparse import urljoin
 from pysqlite2 import dbapi2 as sqlite
 import re

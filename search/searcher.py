@@ -1,6 +1,6 @@
 from pysqlite2 import dbapi2 as sqlite
 from ranker import normalize_scores, word_frequency_score, word_location_score, \
-                    pagerank_score, word_distance_score, inbound_link_score
+                    pagerank_score, word_distance_score, inbound_link_score, link_text_score
 
 class Searcher:
     def __init__( self, dbname ):
@@ -11,7 +11,8 @@ class Searcher:
                                ( word_location_score, 1.0 ),
                                ( word_distance_score, 1.0 ),
                                ( inbound_link_score,  1.0 ),
-                               ( pagerank_score,      1.0 ) ])
+                               ( pagerank_score,      1.0 ), 
+                               ( link_text_score,     1.0 ) ])
 
     def __del__( self ):
         self.con.close()
@@ -61,9 +62,10 @@ class Searcher:
 
     def get_scored_list( self, rows, wordids ):
         total_scores = dict( [ (row[0], 0 ) for row in rows ] )
-        
+       
         weights = self.get_weights( rows, self.con )
-
+        if link_text_score in self.weights:
+            weights.append( ( link_text_score( rows, self.con, wordids ), self.weights[link_text_score] ) )
         for ( scores, weight ) in weights:
             for url in total_scores:
                 total_scores[url] += weight*scores[url]

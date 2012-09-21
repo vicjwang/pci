@@ -1,9 +1,4 @@
 
-
-
-
-
-
 def normalize_scores( scores, small_is_better = 0 ):
     vsmall = .00001 # avoid div by zero
     if small_is_better:
@@ -52,5 +47,16 @@ def pagerank_score( rows, con ):
     normalized_scores = dict([ ( u,float(l)/maxrank ) for (u,l) in pageranks.items() ])
     return normalized_scores
     
-
+def link_text_score( rows, con, wordids=[] ):
+    link_scores = dict( [ (row[0],0) for row in rows] )
+    if not wordids: return dict( [ ( u, 0 ) for u,l in link_scores.items() ] )
+    for wordid in wordids:
+        cur = con.execute( "select link.fromid, link.toid from linkwords, link where wordid=%d and linkwords.linkid=link.rowid" % wordid)
+        for ( fromid, toid ) in cur:
+            if toid in link_scores:
+                pr = con.execute( "select score from pagerank where urlid=%d" % fromid ).fetchone()[0]
+                link_scores[toid] += pr
+    maxscore = max( link_scores.values() )
+    normalized_scores = dict( [ ( u, float(l)/maxscore ) for ( u,l ) in link_scores.items() ] )
+    return normalized_scores
         
