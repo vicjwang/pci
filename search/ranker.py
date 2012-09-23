@@ -1,3 +1,7 @@
+import neural_net as nn
+
+net = nn.SearchNet("nn.db")
+
 
 def normalize_scores( scores, small_is_better = 0 ):
     vsmall = .00001 # avoid div by zero
@@ -59,4 +63,12 @@ def link_text_score( rows, con, wordids=[] ):
     maxscore = max( link_scores.values() )
     normalized_scores = dict( [ ( u, float(l)/maxscore ) for ( u,l ) in link_scores.items() ] )
     return normalized_scores
-        
+
+def nn_score( self, rows, wordids ):
+    # get unique url ids as ordered list
+    urlids = [urlid for urlid in set([row[0] for row in rows])]
+    nnres = net.get_result( wordids, urlids )
+    scores = dict( [ (urlids[i], nnres[i]) for i in range(len(urlids))])
+    return self.normalize_scores(scores)
+     
+

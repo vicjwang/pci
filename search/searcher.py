@@ -12,7 +12,8 @@ class Searcher:
                                ( word_distance_score, 1.0 ),
                                ( inbound_link_score,  1.0 ),
                                ( pagerank_score,      1.0 ), 
-                               ( link_text_score,     1.0 ) ])
+                               ( link_text_score,     1.0 ),
+                               ( nn_score,            1.0 )])
 
     def __del__( self ):
         self.con.close()
@@ -66,6 +67,9 @@ class Searcher:
         weights = self.get_weights( rows, self.con )
         if link_text_score in self.weights:
             weights.append( ( link_text_score( rows, self.con, wordids ), self.weights[link_text_score] ) )
+        if nn_score in self.weights:
+            weights.append( ( nn_score ( rows, self.con, wordids ), self.weights[nn_score] ) )
+
         for ( scores, weight ) in weights:
             for url in total_scores:
                 total_scores[url] += weight*scores[url]
@@ -84,8 +88,5 @@ class Searcher:
         for ( score, urlid ) in ranked_scores[0:10]:
             print '%f\t%s' % ( score, self.get_urlname( urlid ) )
 
-    
-
-
-
+        return wordids, [ r[1] for r in ranked_scores[0:10] ]
 
